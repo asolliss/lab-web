@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bags</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}"/>
+</head>
+<body>
+<div id="top">
+    <a href="#" class="upper-panel">Home</a>
+    <a href="#" class="upper-panel">Products</a>
+    <a href="#" class="upper-panel">Company</a>
+    <a href="#" class="upper-panel">Blog</a>
+    <a href="{% url 't2' %}" class="upper-panel">Task 2</a>
+</div>
+
+<div id="side-panel">
+    <ul class="menu">
+        <li><img src="{% static '13.png' %}"><a href="#">Use f for closed</a></li>
+        <li><img src="{% static '14.png' %}"><a href="#">Use F for open</a></li>
+        <li><img src="{% static '15.png' %}"><a href="#">You may also</a>
+            <ul class="submenu">
+                <li>
+                    <img src="{% static '23.png' %}"><a href="#">just like</a>
+                <li><img src="{% static '20.png' %}"><a href="#">this</a></li>
+            </ul>
+        </li>
+        <li><img src="{% static '16.png' %}"><a href="#">and this</a></li>
+        <li><img src="{% static '17.png' %}"><a href="#">or this</a></li>
+        <li><img src="{% static '18.png' %}"><a href="#">or even this</a></li>
+        <li><img src="{% static '19.png' %}"><a href="#">and this</a>
+            <ul class="submenu">
+                <li><img src="{% static '21.ico' %}"><a href="#">or _ to leave</a></li>
+                <li><img src="{% static '20.png' %}"><a href="#">Use - for a file</a></li>
+                <li><img src="{% static '22.png' %}"><a href="#">use space or</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div id="navigation">
+</div>
+<div id="content">
+
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/1.jpg"/>
+        </div>
+        <figcaption>Сумка №1</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/2.jpg"/>
+        </div>
+        <figcaption>Сумка №2</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/3.jpg"/>
+        </div>
+        <figcaption>Сумка №3</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/4.jpg"/>
+        </div>
+        <figcaption>Сумка №4</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/5.jpg"/>
+        </div>
+        <figcaption>Сумка №5</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/6.jpg"/>
+        </div>
+        <figcaption>Сумка №6</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/7.jpg"/>
+        </div>
+        <figcaption>Сумка №7</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/8.jpg"/>
+        </div>
+        <figcaption>Сумка №8</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/9.jpg"/>
+        </div>
+        <figcaption>Сумка №9</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/10.jpg"/>
+        </div>
+        <figcaption>Сумка №10</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/11.jpg"/>
+        </div>
+        <figcaption>Сумка №11</figcaption>
+    </figure>
+    <figure>
+        <div class="bg-img">
+            <img src="../../static/12.jpg"/>
+        </div>
+        <figcaption>Сумка №12</figcaption>
+    </figure>
+
+</div>
+
+<script>
+       function makeNavTree() {
+        var nav = document.getElementById('navigation');
+
+        var nodes = [];
+        var element = this;
+
+        while (element.parentNode) {
+            if (element.parentNode.nodeName == 'LI') {
+                var txt = element.parentNode.getElementsByTagName('a');
+                nodes.push(txt[0].innerHTML);
+            }
+            element = element.parentNode;
+        }
+
+        nodes.reverse();
+
+        var tmp = "";
+
+        for (var n = 0; n < nodes.length - 1; ++n) {
+            tmp += "<a href='#'>" + nodes[n] + "</a>";
+        }
+        tmp += nodes[nodes.length-1];
+        nav.innerHTML = tmp;
+
+    }
+
+    window.onload = function () {
+
+        var links = document.getElementById('side-panel').getElementsByTagName('a');
+        for (var i = 0; i < links.length; ++i) {
+            links[i].addEventListener('click', makeNavTree);
+        }
+    }
+</script>
+</body>
+</html>

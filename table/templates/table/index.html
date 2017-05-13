@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Table</title>
+</head>
+<body>
+
+<div id="table-component"></div>
+
+<input type="button" id="insert-block" value="Добавить еще один"/>
+
+<script>
+
+    function Creator(amountOfRows, thePage, rowsOnPage, alreadyClicked) {
+
+        function amountOfPages() {
+            return Math.ceil(amountOfRows / rowsOnPage);
+        }
+
+        function changePage(page, tableId, size) {
+            var next = document.getElementById(tableId + '-next');
+            var prev = document.getElementById(tableId + '-prev');
+            var pages = document.getElementById(tableId + '-page');
+
+            if (!Number.isInteger(page)) {
+                page = 1;
+            }
+
+            if (page < 1) {
+                page = 1;
+            }
+            if (page > amountOfPages()) {
+                page = amountOfPages();
+            }
+
+            sendRequest(page, size, tableId);
+
+            pages.innerHTML = page;
+            if (page == 1) {
+                prev.style.visibility = 'hidden';
+            }
+            else {
+                prev.style.visibility = 'visible';
+            }
+
+            if (page == amountOfPages()) {
+                next.style.visibility = 'hidden';
+            }
+            else {
+                next.style.visibility = 'visible';
+            }
+        }
+
+        function build(mydata, page, tableId) {
+
+            var tbl = document.getElementById(tableId + "-container");
+
+            var html = "<table id='" + tableId + "'>";
+
+            html += "<th>" + mydata[0].name + "</th>";
+            html += "<th>" + mydata[0].price + "</th>";
+            html += "<th>" + mydata[0].quantity + "</th>";
+
+            var start = (page - 1) * rowsOnPage == 0 ? 1 : (page - 1) * rowsOnPage;
+            var end = page * rowsOnPage > amountOfRows ? amountOfRows : page * rowsOnPage;
+
+            for (var i = start; i < end; ++i) {
+
+                html += "<tr>";
+                for (var j = 1; j < mydata[i].length; ++j) {
+                    html += "<td>" + mydata[i][j] + "</td>";
+                }
+                html += '</tr>';
+            }
+
+            html += "</table>";
+            tbl.innerHTML = html;
+
+        }
+
+        function sendRequest(page, value, tableId) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var tmp = JSON.parse(this.responseText);
+
+                    amountOfRows = tmp.data.length;
+
+                    build(tmp.data, page, tableId);
+
+
+                    itemClickHandler();
+                    sortHandlers();
+                }
+            };
+            var size = value == undefined ? 'big' : value;
+
+            xmlHttp.open("GET", 'get-data/' + size + '/', false);
+            xmlHttp.send();
+
+        }
+
+        function itemClickHandler() {
+            for (var k = tblCnt - 1; k >= 0; --k) {
+                var table = document.getElementById('tbl'+k);
+                var rows = table.getElementsByTagName("tr");
+                for (var i = 0; i < rows.length; i++) {
+                    var curRow = table.rows[i];
+                    const a = k;
+                    curRow.addEventListener("click", function () {
+                        var cells = this.getElementsByTagName("td");
+                        var tmp = "Выбрано: ";
+                        for (var j = 0; j < cells.length; ++j) {
+                            tmp += cells[j].innerHTML + " ";
+                        }
+                        document.getElementById('tbl'+a + '-chosen').innerHTML = tmp;
+                    });
+                }
+            }
+        }
+
+        function sortHandlers() {
+             for (var k = tblCnt - 1; k >= 0; --k) {
+                 const a = k;
+
+                 var table = document.getElementById('tbl' + k);
+                 var headers = table.getElementsByTagName("th");
+
+                 for (var i = 0; i < headers.length; ++i) {
+                     const t = i;
+                     headers[t].addEventListener("click", function () {
+                         sort(t, 'tbl' + a);
+                     });
+                 }
+             }
+        }
+
+        function prevPage(tableId) {
+            if (thePage > 1) {
+                --thePage;
+                changePage(thePage, tableId);
+            }
+        }
+
+        function nextPage(tableId) {
+            if (thePage < amountOfPages()) {
+                ++thePage;
+                changePage(thePage, tableId);
+            }
+        }
+
+
+        function showAllRows(tableId) {
+            var table = document.getElementById(tableId);
+            var rows = table.getElementsByTagName("tr");
+            for (var i = 1; i < rows.length; i++) {
+                rows[i].style.display = 'table-row';
+            }
+        }
+
+        function filterRows(tableId) {
+
+            var text = document.getElementById(tableId + '-filter').value;
+
+            if (text == '') {
+                showAllRows(tableId);
+            }
+
+            var table = document.getElementById(tableId);
+            var rows = table.getElementsByTagName("tr");
+            for (var i = 1; i < rows.length; i++) {
+                var curRow = table.rows[i];
+                var cells = curRow.getElementsByTagName("td");
+
+                var contains = false;
+                for (var j = 0; j < cells.length; ++j) {
+                    if (cells[j].innerHTML.includes(text)) {
+                        contains = true;
+                    }
+                }
+
+                if (!contains) {
+                    rows[i].style.display = 'none';
+                }
+
+            }
+        }
+
+        function parseIntIfNumber(value) {
+            if (isNaN(value)) {
+                return value;
+            }
+
+            return parseInt(value);
+        }
+
+        function sort(col, tableId) {
+            var tbl = document.getElementById(tableId);
+            var rows = tbl.rows;
+
+            var swapped;
+            do {
+                swapped = false;
+                for (i = 1; i < rows.length - 1; ++i) {
+                    var fir = parseIntIfNumber(rows[i].cells[col].innerHTML);
+                    var sec = parseIntIfNumber(rows[i + 1].cells[col].innerHTML);
+
+                    if (alreadyClicked[col]) {
+                        if (fir < sec) {
+                            swapped = true;
+                        }
+                    }
+                    else {
+                        if (fir > sec) {
+                            swapped = true;
+                        }
+                    }
+
+                    if (swapped) {
+                        tbl.rows[i].parentNode.insertBefore(tbl.rows[i + 1], tbl.rows[i]);
+                    }
+                }
+
+            }
+            while (swapped);
+
+
+            alreadyClicked[col] = alreadyClicked[col] ? false : true;
+        }
+
+        function addHandlers() {
+
+            for (var k = tblCnt - 1; k >= 0; --k) {
+                const t = k;
+
+                var contentSize = document.getElementsByName('tbl' + k + "-size");
+                for (var i = 0; i < contentSize.length; ++i) {
+                    contentSize[i].addEventListener("click", function (e) {
+                        changePage(1, 'tbl' + t, this.value)
+                    });
+                }
+
+                var filter = document.getElementById('tbl' + k + '-filter');
+                filter.addEventListener('input', function () {
+                    filterRows('tbl' + t);
+                });
+
+                var next = document.getElementById('tbl' + k + '-next');
+                next.addEventListener("click", function () {
+                    nextPage('tbl' + t)
+                });
+                var prev = document.getElementById('tbl' + k + '-prev');
+                prev.addEventListener("click", function () {
+                    prevPage('tbl' + t)
+                });
+
+
+            }
+        }
+
+        this.buildTable = function (tableId) {
+            changePage(1, tableId);
+            addHandlers();
+        }
+
+    }
+
+
+    window.onload = function () {
+        tblCnt = 0;
+
+        addBlock();
+
+        var addTbl = document.getElementById('insert-block');
+        addTbl.addEventListener("click", addBlock);
+
+    };
+
+    function addCss(tblId) {
+
+        var myStyle = '#' + tblId + '-pagination {' +
+                'display: flex;}' +
+                '#' + tblId + '-pagination div:before {' +
+                'content: "__";}' +
+                '#' + tblId + '-pagination div:after {' +
+                'content: "__";}' +
+                '#' + tblId + ' th {color: red; background: #ffe4e1;}'+
+                '#' + tblId + ' tr {background: #e4e1ff;}'
+                ;
+
+        var css = myStyle,
+                head = document.head || document.getElementsByTagName('head')[0],
+                style = document.createElement('style');
+
+        style.type = 'text/css';
+        if (style.styleSheet) {
+            style.styleSheet.cssText = css;
+        } else {
+            style.appendChild(document.createTextNode(css));
+        }
+
+        head.appendChild(style);
+    }
+
+    function addHtml(tblId) {
+        var container = document.getElementById('table-component');
+
+        container.innerHTML += 'Набор данных:' +
+                '<input type="radio" name="' + tblId + '-size" value="big"/> Большой' +
+                '<input type="radio" name="' + tblId + '-size" value="small"/> Маленький' +
+                '<input type="radio" name="' + tblId + '-size" value="custom"/> Свой' +
+                '<br/><br/>' +
+                '<input type="text" id="' + tblId + '-filter" placeholder="Table text"/>' +
+                '<div id="' + tblId + '-container"></div>' +
+                '<br/>' +
+                '<div id="' + tblId + '-chosen"></div>' +
+                '<br/>' +
+                '<div id="' + tblId + '-pagination">' +
+                '<a href="#" id="' + tblId + '-prev">Back</a>' +
+                '<div id="' + tblId + '-page"></div>' +
+                '<a href="#" id="' + tblId + '-next">Next</a>' +
+                '</div>';
+
+    }
+
+    function generateNewTblId() {
+        return "tbl" + (tblCnt++);
+    }
+
+    function addBlock() {
+        var tblId = generateNewTblId();
+        addHtml(tblId);
+        addCss(tblId);
+
+        var clickCols = Array();
+        clickCols.fill(false);
+
+        var table = new Creator(1, 1, 51, clickCols);
+        table.buildTable(tblId);
+    }
+
+
+</script>
+</body>
+</html>
